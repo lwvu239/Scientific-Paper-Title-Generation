@@ -226,7 +226,7 @@ titles = generate_title(abstract, num_return_sequences=3)
 
 ##  Authors
 
-**Group 27 - 62FIT4ATI**
+**Luu Quang Vu**
 
 ##  License
 
@@ -335,3 +335,4 @@ print("\n Generated Title:")
 print(f" {generated_title}")
 print("-" * 50)
 ```
+
