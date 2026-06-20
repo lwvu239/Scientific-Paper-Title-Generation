@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Datasets
+*.csv
+*.xlsx
+
+# Model Checkpoints and Results
+results/
+final_model/
+*.log

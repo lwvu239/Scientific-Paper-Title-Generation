@@ -1,84 +1,63 @@
 # Scientific Paper Title Generation
 
-Fine-tune a pre-trained encoder-decoder language model (T5) to generate compelling titles for scientific papers given their abstracts. This is an abstractive text summarization task using the arXiv Dataset.
+This project implements an abstractive text summarization system that generates compelling, concise titles for scientific papers based on their abstracts. It fine-tunes a pre-trained **T5 (Text-to-Text Transfer Transformer)** model using the **arXiv Scientific Dataset**.
 
-##  Table of Contents
-- [Overview](#overview)
-- [Requirements](#requirements)
-- [Dataset](#dataset)
-- [Setup Instructions](#setup-instructions)
-- [Reproduction Steps](#reproduction-steps)
-- [Project Structure](#project-structure)
-- [Model Details](#model-details)
-- [Evaluation Metrics](#evaluation-metrics)
-- [Usage](#usage)
+The repository has been modularized into separate Python scripts for cleaner project management, local execution, and easy configuration.
 
-##  Overview
+---
 
-This project implements a scientific paper title generation system by fine-tuning the T5 (Text-to-Text Transfer Transformer) model. Given an abstract/summary of a scientific paper, the model generates an appropriate title.
+## 📂 Project Structure
 
-**Key Features:**
-- Fine-tuning T5-base model on 30,000 scientific paper samples
-- ROUGE and BLEU evaluation metrics
-- Interactive title generation function
-- Qualitative analysis with similarity scoring
-
-##  Requirements
-
-### Python Version
-- Python 3.8+
-
-### Dependencies
-```
-transformers
-datasets
-evaluate
-rouge-score
-bert-score
-sacrebleu
-sentencepiece
-accelerate
-torch
-pandas
-numpy
-matplotlib
-seaborn
-tqdm
+```text
+Scientific-Paper-Title-Generation/
+│
+├── config.py                 # Configuration, hyperparameters, and path definitions
+├── data_loader.py            # Data loading, length filtering, sampling, and tokenization
+├── train.py                  # Model training pipeline, checkpoint saving, and loss plotting
+├── eval.py                   # Model evaluation (ROUGE, BLEU) and prediction classification
+├── inference.py              # Interactive title generator & CLI demo
+├── utils.py                  # Helper functions (seed, device mapping, metrics, similarity score)
+├── README.md                 # Project documentation
+│
+├── arXiv_scientific dataset.csv # Input dataset (place in this folder)
+├── results/                  # Training history and logs (created during training)
+│   ├── logs/
+│   ├── training_history.csv
+│   └── loss_curves.png       # Generated training vs validation loss curve
+└── final_model/              # Fine-tuned model checkpoint (created after training)
 ```
 
-### Hardware
-- **Recommended:** GPU with CUDA support (NVIDIA GPU with 8GB+ VRAM)
-- **Minimum:** CPU (training will be significantly slower)
+---
 
-##  Dataset
+## ✨ Features
 
-**Dataset:** [arXiv Scientific Dataset](https://drive.google.com/drive/folders/1b8JznRVbkYom1iIZFoBErdfksYsPk6kw)
+- **Modular Design:** Separate scripts for preprocessing, training, evaluation, and inference.
+- **Data Pipeline:** Filters out outliers (e.g. very short/long titles/abstracts) and structures data into train, validation, and test splits.
+- **Fine-tuning Pipeline:** Built on Hugging Face's `Seq2SeqTrainer` utilizing mixed precision training (FP16) if GPU is available.
+- **Evaluation Suite:** Computes ROUGE-1, ROUGE-2, ROUGE-L, and BLEU scores. It also performs qualitative analysis by categorizing predictions into:
+  - *High Match:* Similarity ratio > 0.6
+  - *Medium Match:* Similarity ratio 0.3 - 0.6
+  - *Low Match:* Similarity ratio < 0.3
+- **Interactive Interface:** Easy-to-use `TitleGenerator` class for loading the model and predicting titles on arbitrary abstracts.
 
-The dataset contains metadata for scientific papers from arXiv, including:
-- `summary`: Paper abstract (input)
-- `title`: Paper title (target)
+---
 
-### Data Preprocessing
-- **Sample Size:** 30,000 papers
-- **Filtering Criteria:**
-  - Summary length: 20-512 words
-  - Title length: 3-50 words
-- **Split Ratio:** 80% Train / 10% Validation / 10% Test
+## 🛠️ Installation & Setup
 
-##  Setup Instructions
-
-### 1. Clone/Download the Repository
+### 1. Clone the Repository
 ```bash
 git clone <repository-url>
-cd Final
+cd Scientific-Paper-Title-Generation
 ```
 
-### 2. Create Virtual Environment (Optional but Recommended)
+### 2. Create and Activate Virtual Environment
 ```bash
-python -m venv venv
 # Windows
+python -m venv venv
 venv\Scripts\activate
-# Linux/Mac
+
+# Linux / macOS
+python3 -m venv venv
 source venv/bin/activate
 ```
 
@@ -87,235 +66,61 @@ source venv/bin/activate
 pip install transformers datasets evaluate rouge-score bert-score sacrebleu sentencepiece accelerate torch pandas numpy matplotlib seaborn tqdm
 ```
 
-### 4. Download the Dataset
-1. Download the arXiv dataset from the [Google Drive link](https://drive.google.com/drive/folders/1b8JznRVbkYom1iIZFoBErdfksYsPk6kw)
-2. Place `arXiv_scientific dataset.csv` in your Google Drive or local directory
-3. Update the `data_path` variable in the notebook to point to your dataset location
+---
 
-## 🔄 Reproduction Steps
+## 🚀 Execution Guide
 
-### Running on Google Colab (Recommended)
+### Step 1: Dataset Preparation
+1. Download the **arXiv Scientific Dataset** (`arXiv_scientific dataset.csv`).
+2. Place the CSV file in the root of this project directory.
 
-1. **Upload the notebook** to Google Colab
-2. **Mount Google Drive** (the notebook includes code for this)
-3. **Update the data path:**
-   ```python
-   data_path = '/content/drive/MyDrive/arXiv_scientific dataset.csv'
-   ```
-4. **Run all cells sequentially** (Runtime → Run all)
-
-### Running Locally
-
-1. **Modify the data loading section** in the notebook:
-   ```python
-   # Comment out Google Drive mounting
-   # from google.colab import drive
-   # drive.mount('/content/drive')
-   
-   # Update path to local file
-   data_path = './arXiv_scientific dataset.csv'
-   ```
-
-2. **Execute the notebook cells in order:**
-   - Part 1: Setup & Installation
-   - Part 2: Load & Explore Data
-   - Part 3: Data Sampling & Preprocessing
-   - Part 4: Model Setup & Tokenization
-   - Part 5: Training Configuration
-   - Part 6: Model Training
-   - Part 7: Model Evaluation
-   - Part 8: Qualitative Analysis
-
-### Expected Training Time
-- **GPU (T4/V100):** 30-60 minutes
-- **CPU:** 4-8 hours (not recommended)
-
-##  Project Structure
-
+### Step 2: Model Training
+Run `train.py` to preprocess the dataset, train the model, save weights, and plot training loss curves:
+```bash
+python train.py
 ```
-Final/
-├── 62FIT4ATI_Group27_Topic_SCIENTIFIC_PAPER_TITLE_GENERATION.ipynb  # Main notebook
-├── README.md                    # This file
-├── results/                     # Training checkpoints (created during training)
-│   └── logs/                    # Training logs
-├── final_model/                 # Saved fine-tuned model (created after training)
-└── test_predictions.csv         # Evaluation results (created after evaluation)
+* **Output:** Saves the model weights to `final_model/` and training curves to `results/loss_curves.png`.
+
+### Step 3: Evaluation
+Run `eval.py` to evaluate the model on the test dataset:
+```bash
+python eval.py
+```
+* **Output:** Displays test metrics (ROUGE and BLEU) and saves predicted vs reference titles to `test_predictions.csv` with their qualitative matching score.
+
+### Step 4: Run Inference
+Test the title generator on a sample abstract using:
+```bash
+python inference.py
 ```
 
-##  Model Details
+---
 
-| Parameter | Value |
-|-----------|-------|
-| Base Model | `t5-base` |
-| Parameters | ~220M |
-| Max Input Length | 512 tokens |
-| Max Target Length | 64 tokens |
-| Task Prefix | `"summarize: "` |
+## ⚙️ Configuration (`config.py`)
 
-### Training Configuration
+You can modify configurations inside [config.py](file:///d:/Scientific-Paper-Title-Generation/config.py) directly:
+* `MODEL_NAME`: Underlying pre-trained model (default: `t5-base`).
+* `SAMPLE_SIZE`: Total number of records to sample (default: `30000`).
+* `MAX_INPUT_LENGTH`: Maximum token length for abstracts (default: `512`).
+* `MAX_TARGET_LENGTH`: Maximum token length for titles (default: `64`).
+* `num_train_epochs`: Number of training iterations (default: `3`).
+* `per_device_train_batch_size`: Batch size per device (default: `8`).
+* `gradient_accumulation_steps`: Number of steps for gradient accumulation (default: `4`).
 
-| Hyperparameter | Value |
-|----------------|-------|
-| Epochs | 3 |
-| Batch Size | 8 |
-| Gradient Accumulation Steps | 4 |
-| Effective Batch Size | 32 |
-| Learning Rate | 5e-5 |
-| Warmup Steps | 500 |
-| Weight Decay | 0.01 |
-| FP16 | Enabled (if GPU available) |
-| Beam Search | 4 beams |
+---
 
-##  Evaluation Metrics
+## 💡 Usage Example
 
-The model is evaluated using:
-
-- **ROUGE-1:** Unigram overlap between generated and reference titles
-- **ROUGE-2:** Bigram overlap
-- **ROUGE-L:** Longest common subsequence
-- **BLEU:** Bilingual Evaluation Understudy score
-
-### Qualitative Categories
-Predictions are categorized based on similarity score:
-- **High Match:** Similarity > 0.6
-- **Medium Match:** Similarity 0.3-0.6
-- **Low Match:** Similarity < 0.3
-
-##  Usage
-
-### Interactive Title Generation
-
-After training, use the `generate_title()` function:
+Use the `TitleGenerator` class in your own scripts:
 
 ```python
-# Generate a single title
-titles = generate_title(
-    "Your scientific abstract here...",
-    num_beams=4,
-    max_length=64,
-    num_return_sequences=1
-)
-print(titles[0])
+from inference import TitleGenerator
 
-# Generate multiple title options
-titles = generate_title(
-    "Your scientific abstract here...",
-    num_beams=5,
-    num_return_sequences=3
-)
-for i, title in enumerate(titles):
-    print(f"{i+1}. {title}")
-```
+# Initialize the title generator (loads model from final_model/ by default)
+generator = TitleGenerator()
 
-### Example
-
-```python
+# Define abstract
 abstract = """
-We present a novel approach to natural language processing using 
-transformer-based architectures. Our method achieves state-of-the-art 
-results on multiple benchmarks while being more computationally 
-efficient than previous approaches.
-"""
-
-titles = generate_title(abstract, num_return_sequences=3)
-# Output:
-# 1. A Novel Transformer-Based Approach to Natural Language Processing
-# 2. Efficient Transformer Architectures for NLP
-# 3. State-of-the-Art NLP with Computational Efficiency
-```
-
-##  Authors
-
-**Luu Quang Vu**
-
-##  License
-
-This project is for educational purposes as part of the ATI course.
-
-## Acknowledgments
-
-- [Hugging Face Transformers](https://huggingface.co/transformers/)
-- [arXiv Dataset](https://arxiv.org/)
-- T5 Model by Google Research
-
-
-# If you want to use model, please download my model and push in your drive, then run code below(Recommend run on google coolab)
-```python
-# ============================================================
-# PART 11: LOAD SAVED MODEL & INFERENCE 
-# ============================================================
-
-# 1. Install library
-# !pip install -q transformers sentencepiece
-import os
-import torch
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
-from google.colab import drive
-
-# 2. Mount Google Drive 
-if not os.path.exists('/content/drive'):
-    drive.mount('/content/drive')
-
-model_path = "/content/drive/MyDrive/t5_title_generation_model"
-
-print(f" Loading model from: {model_path}...")
-
-# 4. Load Model & Tokenizer từ Drive
-try:
-    # Load tokenizer
-    loaded_tokenizer = AutoTokenizer.from_pretrained(model_path)
-    # Load model
-    loaded_model = AutoModelForSeq2SeqLM.from_pretrained(model_path)
-    
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    loaded_model.to(device)
-    
-    print(" Model loaded successfully!")
-    print(f"   Device: {device}")
-    
-except Exception as e:
-    print(f" Error loading model: {e}")
-    print("  Check again in your Google Drive.")
-
-# 5. (Summarize Function)
-def generate_title_from_saved_model(text, max_length=64, num_beams=4):
-    """
-    Use model
-    """
-    # Preprocess
-    input_text = "summarize: " + text
-    
-    # Tokenize
-    inputs = loaded_tokenizer(
-        input_text, 
-        max_length=512, 
-        truncation=True, 
-        return_tensors="pt"
-    )
-    
-    inputs = {k: v.to(device) for k, v in inputs.items()}
-    
-    # Generate
-    with torch.no_grad():
-        outputs = loaded_model.generate(
-            **inputs,
-            max_length=max_length,
-            num_beams=num_beams,
-            early_stopping=True,
-            length_penalty=1.0
-        )
-    
-    # Decode text
-    title = loaded_tokenizer.decode(outputs[0], skip_special_tokens=True)
-    return title
-
-# ============================================================
-# DEMO: TEST 
-# ============================================================
-
-print("\n Testing Inference...")
-
-my_abstract = """
 Deep learning models have achieved remarkable success in various natural language processing tasks. 
 However, their performance often relies heavily on large-scale annotated datasets, which are expensive 
 and time-consuming to acquire. In this paper, we propose a semi-supervised learning approach that 
@@ -325,14 +130,16 @@ datasets demonstrate that our approach significantly outperforms existing baseli
 results to fully supervised methods with only 10% of the labeled data.
 """
 
-print("-" * 50)
-print(" Input Abstract:")
-print(my_abstract.strip())
+# Generate titles (e.g. 3 candidate options using beam search)
+titles = generator.generate(abstract, num_beams=5, num_return_sequences=3)
 
-generated_title = generate_title_from_saved_model(my_abstract)
-
-print("\n Generated Title:")
-print(f" {generated_title}")
-print("-" * 50)
+for i, title in enumerate(titles):
+    print(f"Candidate {i+1}: {title}")
 ```
 
+---
+
+## 🧑‍💻 Author
+
+**Luu Quang Vu**
+* ATI Course - Educational Project.
